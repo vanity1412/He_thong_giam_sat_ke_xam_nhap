@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"maincode\startup_stm32f103x6.o"
+"maincode\i2c_lcd.o"
+"maincode\delay.o"
+"maincode\i2c_lcd_cfg.o"
+"maincode\util.o"
+"maincode\main.o"
+"maincode\stm32f1xx_it.o"
+"maincode\stm32f1xx_hal_msp.o"
+"maincode\stm32f1xx_hal_gpio_ex.o"
+"maincode\stm32f1xx_hal_i2c.o"
+"maincode\stm32f1xx_hal.o"
+"maincode\stm32f1xx_hal_rcc.o"
+"maincode\stm32f1xx_hal_rcc_ex.o"
+"maincode\stm32f1xx_hal_gpio.o"
+"maincode\stm32f1xx_hal_dma.o"
+"maincode\stm32f1xx_hal_cortex.o"
+"maincode\stm32f1xx_hal_pwr.o"
+"maincode\stm32f1xx_hal_flash.o"
+"maincode\stm32f1xx_hal_flash_ex.o"
+"maincode\stm32f1xx_hal_exti.o"
+"maincode\stm32f1xx_hal_uart.o"
+"maincode\system_stm32f1xx.o"
+--strict --scatter "MainCode\MainCode.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "MainCode.map" -o MainCode\MainCode.axf

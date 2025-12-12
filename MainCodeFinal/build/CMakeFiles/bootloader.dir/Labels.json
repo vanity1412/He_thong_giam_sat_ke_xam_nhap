@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "D:/Bussiness/2NDPC/ESP IDF/ESP32CAM web AP/MainCodeFinal/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}
