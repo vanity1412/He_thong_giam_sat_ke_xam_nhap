@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Face Recognition AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .user-email {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #video-stream {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .step-desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-right {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>🎥 Face Recognition AI</h1>
+            <p>Hệ thống nhận diện khuôn mặt thông minh</p>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-name">{{ user.name if user else 'User' }}</div>
+                <div class="user-email">{{ user_email if user_email else '' }}</div>
+            </div>
+            <button class="btn-logout" onclick="logout()">Đăng Xuất</button>
+            <button id="btn-admin" class="btn-logout" onclick="window.location.href='/admin'" style="display:none;background:#e74c3c;">👑 Admin</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="main-grid">
+            <div class="card">
+                <h2 class="card-title">📹 Camera</h2>
+                <div class="video-container">
+                    <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Stream">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title">⚙️ Điều Khiển</h2>
+                
+                <div id="alert-container"></div>
+
+                <!-- Chọn nguồn camera -->
+                <div class="step" style="background: #fff3cd; border-left-color: #ffc107;">
+                    <div class="step-title">
+                        <span class="step-number" style="background: #ffc107;">📹</span>
+                        Chọn Nguồn Camera
+                    </div>
+                    <div class="step-desc">
+                        Chọn camera laptop hoặc ESP32-CAM
+                    </div>
+                    <div class="input-group">
+                        <label for="esp32-ip">IP ESP32-CAM:</label>
+                        <input type="text" id="esp32-ip" value="192.168.4.1">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-primary" onclick="setCamera('laptop')" style="font-size: 0.9em;">
+                            💻 Laptop
+                        </button>
+                        <button class="btn btn-danger" onclick="setCamera('esp32')" style="font-size: 0.9em;">
+                            📡 ESP32-CAM
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center; font-size: 0.9em; color: #666;">
+                        Nguồn hiện tại: <strong id="current-camera">Laptop</strong>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <!-- Đăng ký khuôn mặt -->
+                    <div class="step" id="registration-step">
+                        <div class="step-title">
+                            <span class="step-number">📸</span>
+                            Đăng Ký Khuôn Mặt
+                        </div>
+                        <div class="step-desc">
+                            Chụp 30 ảnh → Tự động huấn luyện AI → Tự động bật giám sát
+                        </div>
+                        <button id="btn-register" class="btn btn-primary" onclick="startRegistration()">
+                            📸 Bắt Đầu Đăng Ký
+                        </button>
+                        <div id="registration-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <p style="text-align: center; margin-top: 10px; color: #667eea; font-weight: 600;">
+                                <span id="progress-text">0/30</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Giám sát -->
+                    <div class="step">
+                        <div class="step-title">
+                            <span class="step-number">🔍</span>
+                            Giám Sát Tự Động
+                        </div>
+                        <div class="step-desc">
+                            Email cảnh báo: <strong>{{ user_email }}</strong><br>
+                            Gửi email khi phát hiện người lạ >10s
+                        </div>
+                        <button id="btn-toggle" class="btn btn-danger" onclick="toggleMonitoring()">
+                            ⏹️ Tắt Giám Sát
+                        </button>
+                    </div>
+                </div>
+
+                <div class="status-box">
+                    <div class="status-item">
+                        <span class="status-label">Trạng thái:</span>
+                        <span class="status-value" id="status-text">Chờ đăng ký</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Thời gian cảnh báo:</span>
+                        <span class="status-value" id="warning-time">0s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        async function startRegistration() {
+            try {
+                const response = await fetch('/api/start_registration', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message + ' - Di chuyển đầu nhẹ nhàng!', 'success');
+                    document.getElementById('btn-register').disabled = true;
+                    document.getElementById('registration-progress').style.display = 'block';
+                } else {
+                    showAlert(data.message, 'info');
+                }
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function toggleMonitoring() {
+            try {
+                const response = await fetch('/api/toggle_monitoring', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, data.active ? 'success' : 'info');
+                    
+                    const btn = document.getElementById('btn-toggle');
+                    if (data.active) {
+                        btn.textContent = '⏹️ Tắt Giám Sát';
+                        btn.className = 'btn btn-danger';
+                    } else {
+                        btn.textContent = '▶️ Bật Giám Sát';
+                        btn.className = 'btn btn-success';
+                    }
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function setCamera(source) {
+            const ip = document.getElementById('esp32-ip').value.trim();
+            
+            try {
+                const response = await fetch('/api/set_camera', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ source, ip })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (!data.logged_in) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const btnRegister = document.getElementById('btn-register');
+                const progressDiv = document.getElementById('registration-progress');
+                const regStep = document.getElementById('registration-step');
+                
+                // Cập nhật progress đăng ký
+                if (data.registration_mode) {
+                    const progress = (data.registration_count / data.registration_target) * 100;
+                    document.getElementById('progress-fill').style.width = progress + '%';
+                    document.getElementById('progress-text').textContent = 
+                        `${data.registration_count}/${data.registration_target}`;
+                    progressDiv.style.display = 'block';
+                    btnRegister.disabled = true;
+                    btnRegister.textContent = '⏳ Đang đăng ký...';
+                } else if (data.has_registered || data.registration_completed) {
+                    // Đã hoàn thành đăng ký
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('progress-text').textContent = 'Hoàn thành! ✅';
+                    progressDiv.style.display = 'block';
+                    btnRegister.style.display = 'none';
+                    regStep.style.background = '#d4edda';
+                    regStep.style.borderLeftColor = '#28a745';
+                } else {
+                    // Chưa đăng ký
+                    progressDiv.style.display = 'none';
+                    btnRegister.disabled = false;
+                    btnRegister.style.display = 'block';
+                    btnRegister.textContent = '📸 Bắt Đầu Đăng Ký';
+                }
+                
+                // Cập nhật trạng thái
+                let statusText = 'Chờ đăng ký';
+                if (data.monitoring_active) {
+                    statusText = '🟢 Đang giám sát';
+                } else if (data.registration_mode) {
+                    statusText = '📸 Đang đăng ký';
+                } else if (data.has_registered) {
+                    statusText = '⏸️ Giám sát tắt';
+                }
+                document.getElementById('status-text').textContent = statusText;
+                
+                // Cập nhật nút toggle
+                const btnToggle = document.getElementById('btn-toggle');
+                if (data.monitoring_active) {
+                    btnToggle.textContent = '⏹️ Tắt Giám Sát';
+                    btnToggle.className = 'btn btn-danger';
+                } else {
+                    btnToggle.textContent = '▶️ Bật Giám Sát';
+                    btnToggle.className = 'btn btn-success';
+                }
+                
+                // Cập nhật thời gian cảnh báo
+                document.getElementById('warning-time').textContent = data.warning_duration + 's';
+                
+                // Cập nhật nguồn camera
+                const cameraText = data.camera_source === 'ESP32-CAM' 
+                    ? `ESP32-CAM (${data.esp32_ip})` 
+                    : 'Laptop';
+                document.getElementById('current-camera').textContent = cameraText;
+                
+                // Hiển thị nút admin nếu là admin
+                if (data.is_admin) {
+                    document.getElementById('btn-admin').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Lỗi cập nhật trạng thái:', error);
+            }
+        }
+
+        // Cập nhật trạng thái mỗi giây
+        setInterval(updateStatus, 1000);
+        updateStatus();
+    </script>
+</body>
+</html>

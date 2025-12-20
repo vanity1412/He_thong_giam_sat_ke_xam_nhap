@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Face Recognition AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 1.8em; }
+        .header-right { display: flex; gap: 15px; align-items: center; }
+        .btn-nav {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .btn-nav:hover { background: white; color: #e74c3c; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+</style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>👑 Admin Panel</h1>
+            <p>Quản lý hệ thống nhận diện khuôn mặt</p>
+        </div>
+        <div class="header-right">
+            <span>{{ user_email }}</span>
+            <a href="/dashboard" class="btn-nav">📹 Dashboard</a>
+            <button class="btn-nav" onclick="logout()">Đăng Xuất</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="card">
+            <h2 class="card-title">👥 Quản Lý Người Dùng</h2>
+            <div id="alert-container"></div>
+            <button onclick="retrainModel()" style="margin-bottom:20px;padding:12px 24px;background:#27ae60;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                🤖 Train Lại Model
+            </button>
+            <div id="users-table"></div>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            container.innerHTML = `<div style="padding:12px;border-radius:8px;margin-bottom:15px;background:${type==='success'?'#d4edda':'#f8d7da'};color:${type==='success'?'#155724':'#721c24'}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = `<table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f8f9fa;">
+                                <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Email</th>
+                                <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Tên</th>
+                                <th style="padding:12px;text-align:left;border-bottom:2px solid #ddd;">Ngày tạo</th>
+                                <th style="padding:12px;text-align:center;border-bottom:2px solid #ddd;">Ảnh khuôn mặt</th>
+                                <th style="padding:12px;text-align:center;border-bottom:2px solid #ddd;">Trạng thái</th>
+                                <th style="padding:12px;text-align:center;border-bottom:2px solid #ddd;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                    
+                    data.users.forEach(user => {
+                        const statusBadge = user.has_face 
+                            ? '<span style="background:#28a745;color:white;padding:4px 12px;border-radius:20px;font-size:0.85em;">Đã đăng ký</span>'
+                            : '<span style="background:#dc3545;color:white;padding:4px 12px;border-radius:20px;font-size:0.85em;">Người lạ</span>';
+                        
+                        html += `<tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:12px;">${user.email}</td>
+                            <td style="padding:12px;">${user.name}</td>
+                            <td style="padding:12px;">${user.created_at}</td>
+                            <td style="padding:12px;text-align:center;">${user.face_count} ảnh</td>
+                            <td style="padding:12px;text-align:center;">${statusBadge}</td>
+                            <td style="padding:12px;text-align:center;">
+                                ${user.has_face ? `<button onclick="deleteFace('${user.email}')" style="padding:8px 16px;background:#dc3545;color:white;border:none;border-radius:6px;cursor:pointer;">🗑️ Xóa Face</button>` : '-'}
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    document.getElementById('users-table').innerHTML = html;
+                }
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteFace(email) {
+            if (!confirm(`Xóa dữ liệu khuôn mặt của ${email}?\nUser này sẽ trở thành NGƯỜI LẠ!`)) return;
+            
+            try {
+                const response = await fetch('/api/admin/delete_face', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                showAlert(data.message, data.success ? 'success' : 'error');
+                if (data.success) loadUsers();
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function retrainModel() {
+            try {
+                showAlert('Đang train lại model...', 'success');
+                const response = await fetch('/api/admin/retrain', { method: 'POST' });
+                const data = await response.json();
+                showAlert(data.message, data.success ? 'success' : 'error');
+            } catch (error) {
+                showAlert('Lỗi: ' + error.message, 'error');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

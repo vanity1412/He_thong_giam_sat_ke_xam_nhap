@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Nhận Diện - ESP32-CAM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .video-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #video-stream {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .camera-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .camera-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .badge-esp32 {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .badge-laptop {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .status-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .registered-users {
+            margin-top: 15px;
+        }
+
+        .user-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px 5px 5px 0;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Hệ Thống Nhận Diện - ESP32-CAM</h1>
+        
+        <div class="main-content">
+            <div class="video-section">
+                <div class="video-container">
+                    <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Stream">
+                </div>
+                <div class="camera-info">
+                    <span class="camera-badge" id="camera-badge">Đang tải...</span>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div id="alert-container"></div>
+
+                <div class="control-section">
+                    <h3>📹 Chọn Nguồn Camera</h3>
+                    
+                    <div class="info-box">
+                        <strong>ESP32-CAM:</strong> Nhập IP (ví dụ: 192.168.4.1)
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="esp32-ip">Địa chỉ IP ESP32-CAM:</label>
+                        <input type="text" id="esp32-ip" placeholder="192.168.4.1" value="192.168.4.1">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-danger" onclick="connectESP32()">
+                            📡 ESP32-CAM
+                        </button>
+                        <button class="btn btn-secondary" onclick="useLaptopCamera()">
+                            💻 Laptop
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📝 Đăng Ký Khuôn Mặt</h3>
+                    <div class="input-group">
+                        <label for="name-input">Nhập tên:</label>
+                        <input type="text" id="name-input" placeholder="Ví dụ: Nguyen Van A">
+                    </div>
+                    <div class="input-group">
+                        <label for="num-images">Số lượng ảnh (10-200):</label>
+                        <input type="number" id="num-images" value="50" min="10" max="200">
+                        <small style="color: #666; font-size: 0.85em; margin-top: 5px; display: block;">
+                            💡 Khuyến nghị: 50-100 ảnh cho độ chính xác cao
+                        </small>
+                    </div>
+                    <button class="btn btn-primary" onclick="registerFace()">
+                        Bắt Đầu Đăng Ký
+                    </button>
+                    <div class="loading" id="register-loading">
+                        <div class="spinner"></div>
+                        <p>Đang đăng ký...</p>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🤖 Huấn Luyện AI</h3>
+                    <button class="btn btn-success" onclick="trainModel()">
+                        Huấn Luyện Model
+                    </button>
+                    <div class="loading" id="train-loading">
+                        <div class="spinner"></div>
+                        <p>Đang huấn luyện...</p>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📧 Cảnh Báo Email</h3>
+                    <div class="info-box">
+                        <strong>Tự động gửi email</strong> khi phát hiện người lạ quá 10 giây
+                    </div>
+                    <div class="input-group">
+                        <label for="email-input">Email nhận cảnh báo:</label>
+                        <input type="email" id="email-input" placeholder="example@gmail.com">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="setEmail()">
+                            ✉️ Bật Email
+                        </button>
+                        <button class="btn btn-secondary" onclick="testEmail()">
+                            🧪 Test
+                        </button>
+                    </div>
+                    <button class="btn btn-danger" onclick="disableEmail()" style="margin-top: 10px;">
+                        ❌ Tắt Email
+                    </button>
+                </div>
+
+                <div class="control-section">
+                    <h3>📊 Trạng Thái</h3>
+                    <div class="status-box">
+                        <div class="status-item">
+                            <span class="status-label">Nguồn camera:</span>
+                            <span class="status-value" id="camera-source">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">ESP32 IP:</span>
+                            <span class="status-value" id="esp32-status">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Chế độ:</span>
+                            <span class="status-value" id="mode-status">Nhận diện</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Đang đăng ký:</span>
+                            <span class="status-value" id="register-name">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Tiến độ:</span>
+                            <span class="status-value" id="progress">0/50</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Email cảnh báo:</span>
+                            <span class="status-value" id="email-status">Tắt</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Thời gian cảnh báo:</span>
+                            <span class="status-value" id="warning-time">0s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>👥 Người Đã Đăng Ký</h3>
+                    <div class="registered-users" id="registered-users">
+                        <span class="user-tag">Chưa có dữ liệu</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        async function connectESP32() {
+            const ipInput = document.getElementById('esp32-ip');
+            const ip = ipInput.value.trim();
+            
+            if (!ip) {
+                showAlert('Vui lòng nhập địa chỉ IP!', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/set_camera', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ type: 'esp32', ip: ip })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        async function useLaptopCamera() {
+            try {
+                const response = await fetch('/set_camera', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ type: 'local' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        async function registerFace() {
+            const nameInput = document.getElementById('name-input');
+            const numImagesInput = document.getElementById('num-images');
+            const name = nameInput.value.trim();
+            const numImages = parseInt(numImagesInput.value);
+            
+            if (!name) {
+                showAlert('Vui lòng nhập tên!', 'error');
+                return;
+            }
+            
+            if (numImages < 10 || numImages > 200) {
+                showAlert('Số lượng ảnh phải từ 10-200!', 'error');
+                return;
+            }
+            
+            document.getElementById('register-loading').style.display = 'block';
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name, num_images: numImages })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message + ' - Di chuyển đầu để có nhiều góc độ!', 'success');
+                    nameInput.value = '';
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            } finally {
+                document.getElementById('register-loading').style.display = 'none';
+            }
+        }
+
+        async function trainModel() {
+            document.getElementById('train-loading').style.display = 'block';
+            
+            try {
+                const response = await fetch('/train', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            } finally {
+                document.getElementById('train-loading').style.display = 'none';
+            }
+        }
+
+        async function setEmail() {
+            const emailInput = document.getElementById('email-input');
+            const email = emailInput.value.trim();
+            
+            if (!email) {
+                showAlert('Vui lòng nhập email!', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/set_email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        async function disableEmail() {
+            try {
+                const response = await fetch('/disable_email', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'info');
+                    updateStatus();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        async function testEmail() {
+            try {
+                showAlert('Đang gửi email test...', 'info');
+                
+                const response = await fetch('/test_email', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                // Cập nhật camera source
+                const cameraSource = data.camera_source;
+                document.getElementById('camera-source').textContent = cameraSource;
+                document.getElementById('esp32-status').textContent = data.esp32_ip || '-';
+                
+                // Cập nhật badge
+                const badge = document.getElementById('camera-badge');
+                if (cameraSource === 'ESP32-CAM') {
+                    badge.textContent = `📡 ESP32-CAM (${data.esp32_ip})`;
+                    badge.className = 'camera-badge badge-esp32';
+                } else {
+                    badge.textContent = '💻 Laptop Camera';
+                    badge.className = 'camera-badge badge-laptop';
+                }
+                
+                document.getElementById('mode-status').textContent = 
+                    data.registration_mode ? 'Đang đăng ký' : 'Nhận diện';
+                
+                document.getElementById('register-name').textContent = 
+                    data.registration_name || '-';
+                
+                document.getElementById('progress').textContent = 
+                    `${data.registration_count}/${data.registration_target}`;
+                
+                // Cập nhật trạng thái email
+                const emailStatus = document.getElementById('email-status');
+                if (data.email_enabled) {
+                    emailStatus.textContent = data.email_address;
+                    emailStatus.style.color = '#28a745';
+                } else {
+                    emailStatus.textContent = 'Tắt';
+                    emailStatus.style.color = '#dc3545';
+                }
+                
+                // Cập nhật thời gian cảnh báo
+                document.getElementById('warning-time').textContent = `${data.warning_duration}s`;
+                
+                const usersContainer = document.getElementById('registered-users');
+                if (data.registered_users.length > 0) {
+                    usersContainer.innerHTML = data.registered_users
+                        .map(user => `<span class="user-tag">${user}</span>`)
+                        .join('');
+                } else {
+                    usersContainer.innerHTML = '<span class="user-tag">Chưa có dữ liệu</span>';
+                }
+            } catch (error) {
+                console.error('Lỗi cập nhật trạng thái:', error);
+            }
+        }
+
+        // Cập nhật trạng thái mỗi giây
+        setInterval(updateStatus, 1000);
+        
+        // Cập nhật lần đầu
+        updateStatus();
+
+        // Xử lý Enter key
+        document.getElementById('name-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                registerFace();
+            }
+        });
+
+        document.getElementById('esp32-ip').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                connectESP32();
+            }
+        });
+    </script>
+</body>
+</html>
